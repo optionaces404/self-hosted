@@ -106,7 +106,7 @@ sudo docker compose up -d
 
 echo "Pi-hole setup complete. Update the WEBPASSWORD in docker-compose.yml for security."
 
-# 6. Install and Configure Portainer
+# 5. Install and Configure Portainer
 echo "Setting up Portainer..."
 mkdir -p $HOME/portainer
 
@@ -237,13 +237,13 @@ cat > $HOME/.local/share/qbittorrent/qBittorrent/qBittorrent.conf <<'QBIT'
 enabled=false
 
 [BitTorrent]
-session\add_ext_to_incomplete_files=true
-session\port_range_enforcement=true
+session.add_ext_to_incomplete_files=true
+session.port_range_enforcement=true
 
 [Core]
-session\save_path=$HOME/download
-session\temp_path=$HOME/download
-EOF
+session.save_path=$HOME/download
+session.temp_path=$HOME/download
+QBIT
 
 sudo systemctl start qbittorrent
 
