@@ -202,7 +202,54 @@ sudo docker run -d \
 
 echo "Monitoring stack setup complete."
 
-# 9. Configure Firewall (Last Step for Security)
+# 9. Install qBittorrent (Direct Host Installation)
+echo "Installing qBittorrent..."
+sudo apt install -y qbittorrent-nox
+
+# Create a systemd service for qBittorrent
+sudo tee /etc/systemd/system/qbittorrent.service > /dev/null <<EOF
+[Unit]
+Description=qBittorrent Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$HOME
+ExecStart=/usr/bin/qbittorrent-nox --webui-port=8080 --profile=$HOME/.local/share/qbittorrent
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start qBittorrent service
+sudo systemctl daemon-reload
+sudo systemctl enable qbittorrent
+
+# Create qBittorrent config directory
+mkdir -p $HOME/.local/share/qbittorrent/qBittorrent
+
+# Create qBittorrent config file with download folder set to Samba share
+cat > $HOME/.local/share/qbittorrent/qBittorrent/qBittorrent.conf <<'QBIT'
+[AutoRun]
+enabled=false
+
+[BitTorrent]
+session\add_ext_to_incomplete_files=true
+session\port_range_enforcement=true
+
+[Core]
+session\save_path=$HOME/download
+session\temp_path=$HOME/download
+EOF
+
+sudo systemctl start qbittorrent
+
+echo "qBittorrent installed and running. Downloads will be saved to $HOME/download"
+
+# 10. Configure Firewall (Last Step for Security)
 echo ""
 echo "Configuring firewall rules..."
 sudo apt install -y ufw
@@ -240,6 +287,11 @@ sudo ufw allow 9090/tcp
 # Open Grafana (Dashboards) - port 3000
 sudo ufw allow 3000/tcp
 
+# Open qBittorrent (Torrent Client) - port 8080
+sudo ufw allow 8080/tcp
+sudo ufw allow 6881:6889/tcp
+sudo ufw allow 6881:6889/udp
+
 # Open Pi-hole DNS - ports 53 (TCP/UDP) and port 80 (web UI)
 sudo ufw allow 53/tcp
 sudo ufw allow 53/udp
@@ -247,7 +299,7 @@ sudo ufw allow 80/tcp
 
 echo "Firewall configured successfully."
 
-# 10. Finalize
+# 11. Finalize
 sudo systemctl restart smbd
 
 clear
@@ -266,6 +318,7 @@ echo "- Emby (Media): http://$(hostname -I | awk '{print $1}'):8096"
 echo "- Duplicati (Backup): http://$(hostname -I | awk '{print $1}'):8200"
 echo "- Prometheus (Metrics): http://$(hostname -I | awk '{print $1}'):9090"
 echo "- Grafana (Dashboards): http://$(hostname -I | awk '{print $1}'):3000"
+echo "- qBittorrent (Torrents): http://$(hostname -I | awk '{print $1}'):8080"
 echo "- Immich (Photos): http://$(hostname -I | awk '{print $1}'):2283"
 echo "- Pi-hole (DNS): http://$(hostname -I | awk '{print $1}')/admin"
 echo "- Samba (Mac/ChromeOS): smb://$(hostname -I | awk '{print $1}')/pictures"
