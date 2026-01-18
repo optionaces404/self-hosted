@@ -247,16 +247,7 @@ sudo ufw allow 80/tcp
 
 echo "Firewall configured successfully."
 
-# 10. Final Configuration
-echo ""
-echo "======================================================="
-echo "IMPORTANT: Log out and back in for Docker permissions"
-echo "======================================================="
-echo "The script has added your user to the Docker group."
-echo "You must log out and back in for this to take effect."
-read -p "Press Enter once you have logged out and back in: "
-
-# 11. Finalize
+# 10. Finalize
 sudo systemctl restart smbd
 
 clear
@@ -281,3 +272,8 @@ echo "- Samba (Mac/ChromeOS): smb://$(hostname -I | awk '{print $1}')/pictures"
 echo "-------------------------------------------------------"
 echo "To finish Immich Setup: Go to 'External Libraries' in the web UI"
 echo "and add the path: /external_photos"
+echo ""
+echo "IMPORTANT: Log out and back in for Docker permissions"
+echo "You have been added to the Docker group. Log out and back in"
+echo "for the group permissions to take full effect."
+echo "-------------------------------------------------------"
