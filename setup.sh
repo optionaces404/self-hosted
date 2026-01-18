@@ -249,7 +249,49 @@ sudo systemctl start qbittorrent
 
 echo "qBittorrent installed and running. Downloads will be saved to $HOME/download"
 
-# 10. Configure Firewall (Last Step for Security)
+# 10. Install and Configure Frigate (OpenSource NVR)
+echo "Setting up Frigate..."
+mkdir -p $HOME/frigate
+
+echo "Creating Frigate config file..."
+cat > $HOME/frigate/config.yml <<'FRIGATE'
+logger:
+  default: info
+
+frigate:
+  statsinterval: 60
+
+detectors:
+  cpu:
+    type: cpu
+
+objects:
+  track:
+    - person
+    - car
+    - dog
+    - cat
+
+recording:
+  enabled: true
+  retain:
+    default: 10
+FRIGATE
+
+echo "Starting Frigate Docker container..."
+sudo docker run -d \
+  --name frigate \
+  --restart=always \
+  -p 5000:5000 \
+  -e FRIGATE_RTSP_PASSWORD=password \
+  -v $HOME/frigate/config.yml:/config/config.yml \
+  -v $HOME/frigate:/tmp/frigate \
+  -v /etc/localtime:/etc/localtime:ro \
+  ghcr.io/blakeblackshear/frigate:stable
+
+echo "Frigate setup complete. Add your camera streams in the config file at $HOME/frigate/config.yml"
+
+# 11. Configure Firewall (Last Step for Security)
 echo ""
 echo "Configuring firewall rules..."
 sudo apt install -y ufw
@@ -292,6 +334,9 @@ sudo ufw allow 8080/tcp
 sudo ufw allow 6881:6889/tcp
 sudo ufw allow 6881:6889/udp
 
+# Open Frigate (NVR) - port 5000
+sudo ufw allow 5000/tcp
+
 # Open Pi-hole DNS - ports 53 (TCP/UDP) and port 80 (web UI)
 sudo ufw allow 53/tcp
 sudo ufw allow 53/udp
@@ -299,7 +344,7 @@ sudo ufw allow 80/tcp
 
 echo "Firewall configured successfully."
 
-# 11. Finalize
+# 12. Finalize
 sudo systemctl restart smbd
 
 clear
@@ -319,6 +364,7 @@ echo "- Duplicati (Backup): http://$(hostname -I | awk '{print $1}'):8200"
 echo "- Prometheus (Metrics): http://$(hostname -I | awk '{print $1}'):9090"
 echo "- Grafana (Dashboards): http://$(hostname -I | awk '{print $1}'):3000"
 echo "- qBittorrent (Torrents): http://$(hostname -I | awk '{print $1}'):8080"
+echo "- Frigate (NVR): http://$(hostname -I | awk '{print $1}'):5000"
 echo "- Immich (Photos): http://$(hostname -I | awk '{print $1}'):2283"
 echo "- Pi-hole (DNS): http://$(hostname -I | awk '{print $1}')/admin"
 echo "- Samba (Mac/ChromeOS): smb://$(hostname -I | awk '{print $1}')/pictures"
