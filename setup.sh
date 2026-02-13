@@ -29,8 +29,9 @@ sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils 
 sudo systemctl enable --now libvirtd
 sudo systemctl enable --now cockpit.socket
 
-# 2. Configure Samba with Apple-Optimized Settings
-echo "Configuring Samba..."
+# 2. Install and Configure Samba with Apple-Optimized Settings
+echo "Installing and configuring Samba..."
+sudo apt install -y samba samba-vfs-modules
 sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
 cat <<EOF | sudo tee -a /etc/samba/smb.conf
 
