@@ -13,6 +13,20 @@ mkdir -p $HOME/pictures
 mkdir -p $HOME/Downloads  # Samba share for downloads
 mkdir -p $HOME/media     # Samba share for media files
 
+# --- Create NAS user if it doesn't exist ---
+echo "Setting up NAS user..."
+if ! id "nas" &>/dev/null; then
+    sudo useradd -m -s /usr/sbin/nologin nas
+    echo "NAS user created successfully."
+else
+    echo "NAS user already exists."
+fi
+
+# Create backup directory in nas user's home
+sudo mkdir -p /home/nas/backup
+sudo chown nas:nas /home/nas/backup
+sudo chmod 755 /home/nas/backup
+
 # 1. Install Required Tools and Services
 echo "Installing required tools and services..."
 sudo apt update && sudo apt upgrade -y
@@ -44,6 +58,9 @@ cat <<EOF | sudo tee -a /etc/samba/smb.conf
    fruit:nfs_aces = no
    server smb encrypt = no
    smb encrypt = off
+   dos filetimes = yes
+   create mask = 0644
+   directory mask = 0755
 
 [pictures]
    path = $HOME/pictures
@@ -68,6 +85,14 @@ cat <<EOF | sudo tee -a /etc/samba/smb.conf
    read only = no
    browseable = yes
    force user = $USER
+
+[backup]
+   path = /home/nas/backup
+   writable = yes
+   guest ok = no
+   read only = no
+   browseable = yes
+   force user = nas
 EOF
 
 # 3. Configure Immich with External Library Support
