@@ -95,6 +95,10 @@ cat <<EOF | sudo tee -a /etc/samba/smb.conf
    force user = nas
 EOF
 
+# Set Samba password for nas user
+echo "Setting Samba password for NAS user..."
+sudo smbpasswd -a nas
+
 # 3. Configure Immich with External Library Support
 echo "Setting up Immich..."
 cd $HOME/immich
