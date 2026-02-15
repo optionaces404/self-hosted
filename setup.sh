@@ -10,7 +10,7 @@ echo "Sudo cached. Script will proceed with elevated commands."
 echo "Creating required directories..."
 mkdir -p $HOME/immich
 mkdir -p $HOME/pictures
-mkdir -p $HOME/download  # Samba share for downloads
+mkdir -p $HOME/Downloads  # Samba share for downloads
 mkdir -p $HOME/media     # Samba share for media files
 
 # 1. Install Required Tools and Services
@@ -54,7 +54,7 @@ cat <<EOF | sudo tee -a /etc/samba/smb.conf
    force user = $USER
 
 [download]
-   path = $HOME/download
+   path = $HOME/Downloads
    writable = yes
    guest ok = yes
    read only = no
@@ -242,13 +242,13 @@ session.add_ext_to_incomplete_files=true
 session.port_range_enforcement=true
 
 [Core]
-session.save_path=$HOME/download
-session.temp_path=$HOME/download
+session.save_path=$HOME/Downloads
+session.temp_path=$HOME/Downloads
 QBIT
 
 sudo systemctl start qbittorrent
 
-echo "qBittorrent installed and running. Downloads will be saved to $HOME/download"
+echo "qBittorrent installed and running. Downloads will be saved to $HOME/Downloads"
 
 # 10. Install and Configure Frigate (OpenSource NVR)
 echo "Setting up Frigate..."
